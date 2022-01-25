@@ -3,6 +3,7 @@ from PIL import Image
 from flask import Flask, render_template, request
 from torch.autograd import Variable
 from torchvision.transforms import transforms
+from torchvision.utils import save_image
 
 from nn import Net
 
@@ -26,13 +27,19 @@ def index():
         ])
         with torch.no_grad():
             data = Variable(convert_tensor(im))
-            data = data.view(-1, 28 * 28)
+            data = data.unsqueeze(1)
+            # save_image(data, 'GREY_img.png')
             net_out = model(data)
             res = int(net_out.data.max(1).indices[0])
 
-            print(net_out.data)
-            print(net_out.data.max(1))
-            print(res)
+            # print(net_out.data)
+
+            percents = []
+            for d in net_out.data:
+                percents.append([])
+                total = float(d.sum())
+                for n, i in enumerate(d):
+                    percents[-1].append((n, float(i) / total * 100))
 
             return str(res), 200
 
